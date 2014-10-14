@@ -13,7 +13,7 @@ currently the only XQuery-based CSV-to-XML converter that can parse them properl
 If your data contains no such escape sequences, you will get much better performance
 using a different parser.
 
-GRAMMAR:
+<a href="http://tools.ietf.org/html/rfc4180">RFC 4180</a> GRAMMAR:
 ```
  file = [header CRLF] record *(CRLF record) [CRLF]
  header = field *(COMMA field)
