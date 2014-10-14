@@ -14,6 +14,7 @@ If your data contains no such escape sequences, you will get much better perform
 using a different parser.
 
 GRAMMAR:
+```
  file = [header CRLF] record *(CRLF record) [CRLF]
  header = field *(COMMA field)
  record = field *(COMMA field)
@@ -26,7 +27,7 @@ GRAMMAR:
  LF = %x0A ;as per section 6.1 of RFC 2234 [2]
  CRLF = CR LF ;as per section 6.1 of RFC 2234 [2]
  TEXTDATA =  %x20-21 / %x23-2B / %x2D-7E
-
+```
 
 Parameters:
   $file as xs:string -- contents of CSV file to parse
