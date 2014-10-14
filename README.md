@@ -3,26 +3,22 @@ correct-csv-parser-xquery
 
 Author: Matthew Royal
 
-This CSV parser correctly parses CSV files with escaped quotation marks ("") 
-and carriage returns in column data. It is probably slower than <a href="https://github.com/dmcassel/blog-code">other parsers</a>, 
-because the XQuery language standard does not support several key Regex features
-and relies on parsing the file one character at a time instead. 
+## OVERVIEW:
+This CSV parser correctly parses CSV files with escaped quotation marks ("") and carriage returns in column data. It is probably slower than <a href="https://github.com/dmcassel/blog-code">other parsers</a>, because the XQuery language standard does not support several key Regex features and relies on parsing the file one character at a time instead. 
 
-If your column data contains these escaped characters, to my knowledge this is 
-currently the only XQuery-based CSV-to-XML converter that can parse them properly.
-If your data contains no such escape sequences, you will get much better performance
+If your column data contains these escaped characters, to my knowledge this is currently the only XQuery-based CSV-to-XML converter that can parse them properly. If your data contains no such escape sequences, you will get much better performance
 using a different parser.
 
-PERFORMANCE:
-Quite a bit of speed was gained by NOT using the fn:substring() method --
-instead, the file is converted to a sequence of codepoints. More than likely, 
-the substring method's performance is O(n), so iterating a character at a time
-has an efficiency of O(n!).
 
-It's still too slow for very large data sets -- using my Macbook Pro (2.3 GHz i7, 16 GB DDR3)
-running a 7.95MB CSV and writing it to an XML file took PT2M53.663599S
+## PERFORMANCE:
+Quite a bit of speed was gained by NOT using the fn:substring() method -- instead, the file is converted to a sequence of codepoints. More than likely, the substring method's performance is O(n), so iterating a character at a time has an efficiency of O(n!).
 
-<a href="http://tools.ietf.org/html/rfc4180">RFC 4180</a> GRAMMAR:
+It's still too slow for very large data sets -- using my Macbook Pro (2.3 GHz i7, 16 GB DDR3) running a 7.95MB CSV and writing it to an XML file took PT2M53.663599S
+
+Additional performance gains could be found by eliminating all the xs:string() casting.
+
+
+## <a href="http://tools.ietf.org/html/rfc4180">RFC 4180</a> GRAMMAR:
 ```
  file = [header CRLF] record *(CRLF record) [CRLF]
  header = field *(COMMA field)
