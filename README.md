@@ -30,5 +30,7 @@ GRAMMAR:
 ```
 
 Parameters:
+```
   $file as xs:string -- contents of CSV file to parse
   $header as xs:boolean -- indicates that the first row of the file is the header.
+```
