@@ -1,7 +1,9 @@
 xquery version "1.0-ml";
-declare namespace matt = "http://matthewroyal.com/blog";
 
-declare variable $matt as xs:string := "http://matthewroyal.com/blog";
+declare namespace csv = "http://matthewroyal.com/csv";
+
+declare variable $csv as xs:string := "http://matthewroyal.com/csv";
+
 
 (:~
     Join a sequence of codepoints into a xs:string
@@ -9,6 +11,7 @@ declare variable $matt as xs:string := "http://matthewroyal.com/blog";
 declare function local:joinCodes($codepoints) as xs:string {
   fn:string-join( for $c in $codepoints return fn:codepoints-to-string($c) )
 };
+
 
 (:~
     CORRECT CSV PARSER, author: Matthew Royal
@@ -22,11 +25,8 @@ declare function local:joinCodes($codepoints) as xs:string {
     currently the only XQuery-based CSV-to-XML converter that can parse them properly.
     If your data contains no such escape sequences, you will get much better performance
     using a different parser.
-    
-    PERFORMANCE: Using my Macbook Pro: 2.3 GHz i7, 16 GB 1600MHz DDR3. Running MarkLogic 7.0-3:
-      Converting a 7.9 MB CSV and inserting the resulting XML file took T00:01:08.90S
   
-    RFC 4180 GRAMMAR:
+    GRAMMAR:
      file = [header CRLF] record *(CRLF record) [CRLF]
      header = field *(COMMA field)
      record = field *(COMMA field)
@@ -76,9 +76,7 @@ declare function local:parseFile(
         let $fieldMax := if ($fieldNum > map:get($mem, "fields")) then $fieldNum else map:get($mem, "fields")
         let $row := map:get($mem, "row")
         let $o := map:get($mem, "origin")
-        let $fieldValue := local:joinCodes(
-          $inputCodepoints[$o to (if ($fileLength = $i) then $i - $o + 1 else $i -$o)]
-        )
+        let $fieldValue := local:joinCodes($inputCodepoints[$o to (if ($fileLength = $i) then $i else $i - 1)])
         let $_ := 
           if ($row = 1 and $header) then
             map:put($mem, "header-" || xs:string($fieldNum), $fieldValue)
@@ -101,7 +99,7 @@ declare function local:parseFile(
     for $r in 1 to $rows
     return
       if ($r = 1 and $header) then () else (: Skip the header row :) 
-      element { fn:QName( $matt, "row" ) }
+      element { fn:QName( $csv, "row" ) }
       {
         if ($header) then
           attribute {xs:QName("num")} {$r - 1}
@@ -116,9 +114,11 @@ declare function local:parseFile(
             element 
             { 
               if ($header) then
-                fn:QName( $matt, fn:replace(map:get($mem, "header-"||xs:string($f)), '["|]', '') )
+                let $default := "field" || xs:string($f)
+                let $custom := fn:replace(map:get($mem, "header-"||xs:string($f)), '["| ]', '')
+                return fn:QName( $csv, if ($custom = "") then $default else $custom )
               else
-                fn:QName($matt, "field" || xs:string($f)) 
+                fn:QName($csv, "field" || xs:string($f))
             } 
             { map:get($mem, xs:string($r) || "-" || xs:string($f)) }
           else ()
@@ -126,18 +126,29 @@ declare function local:parseFile(
 };
 
 
-let $rFile := '"RELATIONSHIP_ID","RELATIONSHIP_NAME","IS_HIERARCHICAL","DEFINES_ANCESTRY","REVERSE_RELATIONSHIP"|
-319,"Multilex ingredient to drug class (OMOP)",0,0,320|
-320,"Drug class to Multilex ingredient (OMOP)",0,1,|
-347,"Concept replaced by",0,0,348|
-348,"Concept replaces",0,0,||
-'
+let $fileContents := '"DRUG_CONCEPT_ID","INGREDIENT_CONCEPT_ID","AMOUNT_VALUE","AMOUNT_UNIT","CONCENTRATION_VALUE","CONCENTRATION_ENUM_UNIT","CONCENTRATION_DENOM_UNIT","VALID_START_DATE","VALID_END_DATE","INVALID_REASON"|
+19035821,19069022,8.3,"mg",,,,1970-01-01,2099-12-31,|
+19035837,1351461,,,100,"mg","ml",1970-01-01,2009-09-06,D|
+19035864,19132972,,,150,"mg","ml",1970-01-01,2099-12-31,|
+19035865,1163944,,,20,"mg","ml",1970-01-01,2099-12-31,|
+19035867,1163944,,,20,"mg","ml",1970-01-01,2099-12-31,|
+19035932,1351779,50,"mg",,,,1970-01-01,2099-12-31,|
+19035937,1163944,,,40,"mg","ml",1970-01-01,2099-12-31,|
+19035962,1163944,,,20,"mg","ml",1970-01-01,2099-12-31,|
+19035963,1201620,,,2,"mg","ml",1970-01-01,2099-12-31,|
+19035965,1201620,,,2,"mg","ml",1970-01-01,2099-12-31,|
+19036008,19035704,500,"mg",,,,1970-01-01,2099-12-31,|
+19036138,1159811,,,.8,"mg","ml",1970-01-01,2099-12-31,|
+19036172,933952,,,.8,"mg","ml",1970-01-01,2099-12-31,|
+19036201,1135766,,,1,"mg","ml",1970-01-01,2099-12-31,|
+19036208,933952,,,10,"mg","ml",1970-01-01,2099-12-31,|'
 
-let $file := 'pin,Pilatus,"Pilatus ""quoted
+let $trickyFileContents := 'eapple,Pontius,multiline quotation,date1,date2,usually blank,another crazy multiline,user
+pin,Pilatus,"Pilatus ""quoted
  string"" mountain",7/1/1984,7/31/1984,,",a word,
 ,,and another,,",dcassel'
-let $field := '"Pilatus ""quoted string"" mountain"'
+
 
 return
-  element csv { local:parseFile($rFile, fn:true()) }
+  element csv:csv { local:parseFile($fileContents, fn:true()) }
 
