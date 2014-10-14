@@ -4,7 +4,7 @@ correct-csv-parser-xquery
 Author: Matthew Royal
 
 This CSV parser correctly parses CSV files with escaped quotation marks ("") 
-and carriage returns in column data. It is probably slower than other parsers, 
+and carriage returns in column data. It is probably slower than <a href="https://github.com/dmcassel/blog-code">other parsers</a>, 
 because the XQuery language standard does not support several key Regex features
 and relies on parsing the file one character at a time instead.
 
