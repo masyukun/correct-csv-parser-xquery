@@ -9,7 +9,7 @@ declare variable $csv as xs:string := "http://matthewroyal.com/csv";
     Join a sequence of codepoints into a xs:string
 :)
 declare function local:joinCodes($codepoints) as xs:string {
-  fn:string-join( for $c in $codepoints return fn:codepoints-to-string($c) )
+  fn:string-join( for $c in $codepoints return try {fn:codepoints-to-string($c)} catch ($e) {""} )
 };
 
 
@@ -60,13 +60,13 @@ declare function local:parseFile(
   let $inputCodepoints := fn:string-to-codepoints($file)
   let $_ :=
     for $l at $i in $inputCodepoints
-    let $letter := fn:codepoints-to-string($l)
+    let $letter := try { fn:codepoints-to-string($l) } catch ($e) { "" } (: Eliminate unprintable characters (ASCII control chars) :)
     return
       (: Quote mark:)
       if ($letter = '"') then
-        if (fn:not(map:get($mem, "escaped")) and (local:joinCodes($inputCodepoints[$i - 1]) = "," or fn:not(local:joinCodes($inputCodepoints[$i - 1])))) then
+        if (fn:not(map:get($mem, "escaped")) and (fn:codepoints-to-string($inputCodepoints[$i - 1]) = "," or fn:not(fn:codepoints-to-string($inputCodepoints[$i - 1])))) then
           map:put($mem, "escaped", '"')
-        else if (map:get($mem, "escaped") and local:joinCodes($inputCodepoints[$i - 1]) != '"' and local:joinCodes($inputCodepoints[$i + 1]) != '"') then
+        else if (map:get($mem, "escaped") and fn:codepoints-to-string($inputCodepoints[$i - 1]) != '"' and fn:codepoints-to-string($inputCodepoints[$i + 1]) != '"') then
           map:put($mem, "escaped", ())
         else ()
       (: Comma; newline, end of row; End of file :)
