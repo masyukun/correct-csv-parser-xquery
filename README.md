@@ -11,7 +11,7 @@ using a different parser.
 
 
 ## PERFORMANCE:
-Quite a bit of speed was gained by NOT using the fn:substring() method -- instead, the file is converted to a sequence of codepoints. More than likely, the substring method's performance is O(n), so iterating a character at a time has an efficiency of O(n!).
+Quite a bit of speed was gained by NOT using the fn:substring() method -- instead, the file is converted to a <a href="http://www.xqueryfunctions.com/xq/fn_string-to-codepoints.html">sequence of codepoints</a>. More than likely, the substring method's performance is O(n), so iterating a character at a time has an efficiency of O(n!).
 
 It's still too slow for very large data sets -- using my Macbook Pro (2.3 GHz i7, 16 GB DDR3) running a 7.95MB CSV and writing it to an XML file took PT2M53.663599S
 
